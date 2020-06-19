@@ -26,28 +26,32 @@ class _WeatherPageState extends State<WeatherPage> {
       appBar: AppBar(
         title: Text('Weather App'),
       ),
-      body: Container(
-        padding: EdgeInsets.all(16),
-        alignment: Alignment.center,
-        child: BlocConsumer<WeatherPageBlocBloc, WeatherPageBlocState>(
-          bloc: BlocProvider.of<WeatherPageBlocBloc>(context),
-          listener: (context, state){
-            if(state is WeatherLoaded){
-              print("WeatherLoaded: ${state.weather.temperature}");
-            }
-          },
-          builder: (BuildContext context, WeatherPageBlocState state) {
-            if (state is WeatherLoaded) {
-              return buildColumnWithData(state.weather);
-            }
-            if (state is WeatherLoading) {
-              return _buildCircularIndicator();
-            }
-            if (state is WeatherInitialState) {
-              return buildColumnWithData(null);
-            }
-            return SizedBox.shrink();
-          },
+      body: BlocProvider(
+        create: (c) => WeatherPageBlocBloc(),
+        child: Container(
+          padding: EdgeInsets.all(16),
+          alignment: Alignment.center,
+          child: BlocListener<WeatherPageBlocBloc, WeatherPageBlocState>(
+            listener: (context, state){
+              if(state is WeatherLoaded){
+                print("WeatherLoaded: ${state.weather.temperature}");
+              }
+            },
+            child: BlocBuilder<WeatherPageBlocBloc, WeatherPageBlocState>(
+              builder: (BuildContext context, WeatherPageBlocState state) {
+                if (state is WeatherLoaded) {
+                  return buildColumnWithData(state.weather);
+                }
+                if (state is WeatherLoading) {
+                  return _buildCircularIndicator();
+                }
+                if (state is WeatherInitialState) {
+                  return buildColumnWithData(null);
+                }
+                return SizedBox.shrink();
+              },
+            ),
+          ),
         ),
       ),
     );
