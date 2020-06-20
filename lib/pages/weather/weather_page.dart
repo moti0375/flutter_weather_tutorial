@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutterfakeweather/model/weather.dart';
-import 'package:flutterfakeweather/pages/weather/bloc.dart';
+import 'package:flutterfakeweather/data/model/weather.dart';
+import 'package:flutterfakeweather/pages/weather/weather_bloc.dart';
+import 'package:flutterfakeweather/pages/weather/weather_bloc_state.dart';
 import 'package:flutterfakeweather/widgets/TextInputField.dart';
 import 'package:intl/intl.dart';
 
@@ -11,7 +12,7 @@ class WeatherPage extends StatefulWidget {
 
   static Widget create(){
     return BlocProvider(
-      create: (c) => WeatherPageBlocBloc(),
+      create: (c) => WeatherBloc(),
       child: WeatherPage(),
     );
   }
@@ -27,18 +28,18 @@ class _WeatherPageState extends State<WeatherPage> {
         title: Text('Weather App'),
       ),
       body: BlocProvider(
-        create: (c) => WeatherPageBlocBloc(),
+        create: (c) => WeatherBloc(),
         child: Container(
           padding: EdgeInsets.all(16),
           alignment: Alignment.center,
-          child: BlocListener<WeatherPageBlocBloc, WeatherPageBlocState>(
+          child: BlocListener<WeatherBloc, WeatherBlocState>(
             listener: (context, state){
               if(state is WeatherLoaded){
                 print("WeatherLoaded: ${state.weather.temperature}");
               }
             },
-            child: BlocBuilder<WeatherPageBlocBloc, WeatherPageBlocState>(
-              builder: (BuildContext context, WeatherPageBlocState state) {
+            child: BlocBuilder<WeatherBloc, WeatherBlocState>(
+              builder: (BuildContext context, WeatherBlocState state) {
                 if (state is WeatherLoaded) {
                   return buildColumnWithData(state.weather);
                 }

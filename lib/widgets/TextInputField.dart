@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutterfakeweather/pages/weather/bloc.dart';
+import 'package:flutterfakeweather/pages/weather/weather_bloc.dart';
+import 'package:flutterfakeweather/pages/weather/weather_bloc_event.dart';
 
 class TextInputField extends StatefulWidget {
   const TextInputField({Key key}) : super(key: key);
@@ -28,6 +29,6 @@ class _TextInputFieldState extends State<TextInputField> {
   }
 
   void _submitText(String text){
-    context.bloc<WeatherPageBlocBloc>().add(GetWeather(cityName: text));
+    context.bloc<WeatherBloc>().add(GetWeather(cityName: text));
   }
 }
