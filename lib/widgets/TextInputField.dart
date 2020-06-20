@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutterfakeweather/pages/weather/weather_bloc.dart';
-import 'package:flutterfakeweather/pages/weather/weather_bloc_event.dart';
+import 'package:flutterfakeweather/pages/weather/weather_store.dart';
+import 'package:provider/provider.dart';
 
 class TextInputField extends StatefulWidget {
   const TextInputField({Key key}) : super(key: key);
@@ -29,6 +28,13 @@ class _TextInputFieldState extends State<TextInputField> {
   }
 
   void _submitText(String text){
-    context.bloc<WeatherBloc>().add(GetWeather(cityName: text));
+    print("_submitText: $text");
+    try{
+      final store = Provider.of<WeatherStore>(context, listen: false);
+      store.getWeather(text);
+    } catch(e) {
+      print('error: ${e.toString()}');
+    }
+
   }
 }

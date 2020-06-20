@@ -1,23 +1,29 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutterfakeweather/pages/weather/weather_bloc.dart';
-import 'package:flutterfakeweather/pages/weather/weather_bloc_event.dart';
-import 'package:flutterfakeweather/pages/weather/weather_bloc_state.dart';
+import 'package:flutter_mobx/flutter_mobx.dart';
+import 'package:flutterfakeweather/data/model/weather.dart';
+import 'package:flutterfakeweather/pages/weather/weather_store.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
 class WeatherDetails extends StatefulWidget {
   final String cityName;
+  final WeatherStore store;
 
-  const WeatherDetails({Key key, this.cityName}) : super(key: key);
+  const WeatherDetails({Key key, this.cityName, this.store}) : super(key: key);
 
   @override
   _WeatherDetailsState createState() => _WeatherDetailsState();
 
   static Widget create(String cityName, BuildContext context) {
-    return BlocProvider.value(
-      value: BlocProvider.of<WeatherBloc>(context),
-      child: WeatherDetails(cityName: cityName,),
+    return Provider<WeatherStore>.value(
+      value: Provider.of<WeatherStore>(context),
+      child: Consumer<WeatherStore>(
+        builder: (c, store, widget) => WeatherDetails(
+          cityName: cityName,
+          store: store,
+        ),
+      ),
     );
   }
 }
@@ -26,9 +32,9 @@ class _WeatherDetailsState extends State<WeatherDetails> {
   NumberFormat naturalFormat = NumberFormat('#,###,###,###.#');
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    BlocProvider.of<WeatherBloc>(context)..add(GetWeatherDetails(cityName: widget.cityName));
+  void initState() {
+    super.initState();
+    widget.store.getWeatherDetails(widget.cityName);
   }
 
   @override
@@ -37,16 +43,21 @@ class _WeatherDetailsState extends State<WeatherDetails> {
       appBar: AppBar(
         title: Text('Weather Details'),
       ),
-      body: BlocBuilder<WeatherBloc, WeatherBlocState>(
-        builder: (context, state) {
-          if (state is WeatherLoading) {
-            return _buildLoading();
-          }
-          if (state is WeatherLoaded) {
-            return _buildDetailsWithContent(state);
-          }
-          return SizedBox.shrink();
-        },
+      body: Container(
+        padding: EdgeInsets.all(16),
+        alignment: Alignment.center,
+        child: Observer(
+          builder: (_) {
+            switch (widget.store.state) {
+              case StoreState.loading:
+                return _buildLoading();
+              case StoreState.loaded:
+                return _buildDetailsWithContent(widget.store.weather);
+              default:
+                return SizedBox.shrink();
+            }
+          },
+        ),
       ),
     );
   }
@@ -59,21 +70,21 @@ class _WeatherDetailsState extends State<WeatherDetails> {
     );
   }
 
-  Widget _buildDetailsWithContent(WeatherLoaded state) {
+  Widget _buildDetailsWithContent(Weather weather) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: <Widget>[
           Text(
-            '${state.weather.cityName}',
+            '${weather.cityName}',
             style: TextStyle(fontSize: 40),
           ),
           Text(
-            '${naturalFormat.format(state.weather.temperature)}°C',
+            '${naturalFormat.format(weather.temperature)}°C',
             style: TextStyle(fontSize: 80),
           ),
           Text(
-            '${naturalFormat.format(state.weather.temperatureFahrenheit)}°F',
+            '${naturalFormat.format(weather.temperatureFahrenheit)}°F',
             style: TextStyle(fontSize: 80),
           )
         ],
