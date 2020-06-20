@@ -16,4 +16,11 @@ class GetWeather extends WeatherBlocEvent{
   List<Object> get props => [cityName];
 }
 
+class GetWeatherDetails extends WeatherBlocEvent{
+  final String cityName;
+  GetWeatherDetails({this.cityName}) ;
+  @override
+  List<Object> get props => [cityName];
+}
+
 

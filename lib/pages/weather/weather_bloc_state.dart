@@ -7,7 +7,7 @@ abstract class WeatherBlocState extends Equatable {
   List<Object> get props => const[];
 }
 
-class WeatherInitialState extends WeatherBlocState {
+class WeatherInitial extends WeatherBlocState {
   @override
   List<Object> get props => [];
 }
@@ -22,3 +22,11 @@ class WeatherLoaded extends WeatherBlocState{
   List<Object> get props => [weather];
 }
 
+class WeatherError extends WeatherBlocState{
+  final String error;
+
+  WeatherError({this.error});
+
+  @override
+  List<Object> get props => [error];
+}
