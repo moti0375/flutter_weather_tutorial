@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutterfakeweather/data/model/weather.dart';
 import 'package:flutterfakeweather/data/weather_repository.dart';
 import 'package:mobx/mobx.dart';
@@ -12,17 +13,34 @@ class WeatherStore extends _WeatherStore with _$WeatherStore {
 
 abstract class _WeatherStore with Store {
   final WeatherRepository _repository;
-
-  _WeatherStore(this._repository);
-
-  @observable
-  ObservableFuture<Weather> _weatherFuture;
+  ReactionDisposer _disposer;
+  ReactionDisposer _autoRunDisposer;
+  ReactionDisposer _reactionDisposer;
+  String hello;
 
   @observable
   Weather weather;
 
   @observable
+  List<Weather> weathers;
+
+  @computed
+  List<Text> get text => weathers.map((e) => Text(e.cityName));
+
+  @observable
+  ObservableFuture<Weather> _weatherFuture;
+
+
+  @observable
   String errorMessage;
+
+  _WeatherStore(this._repository){
+   _disposer =  when((_) => weather.cityName == 'Tel Aviv', () => print('Getting weather for Tel Aviv'));
+   _autoRunDisposer =  autorun((_) => print('autorun: $weather'), );
+   _reactionDisposer =  reaction((_) => weather, (weather) => print('Reaction for weather: ${weather}'));
+
+  }
+
 
   @computed
   StoreState get state {
@@ -32,6 +50,7 @@ abstract class _WeatherStore with Store {
     }
     return _weatherFuture.status == FutureStatus.pending ? StoreState.loading : StoreState.loaded;
   }
+
 
   @action
   Future<void> getWeather(String cityName) async {
@@ -48,7 +67,14 @@ abstract class _WeatherStore with Store {
 
   @action
   Future<void> getWeatherDetails(String cityName) async {
+    await Future.delayed(Duration(milliseconds: 200));
     _weatherFuture = ObservableFuture(_repository.getWeatherDetails(cityName));
     weather = await _weatherFuture;
+  }
+
+  void dispose(){
+    _disposer();
+    _autoRunDisposer();
+    _reactionDisposer();
   }
 }

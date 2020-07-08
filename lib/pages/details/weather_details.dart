@@ -31,10 +31,12 @@ class WeatherDetails extends StatefulWidget {
 class _WeatherDetailsState extends State<WeatherDetails> {
   NumberFormat naturalFormat = NumberFormat('#,###,###,###.#');
 
+
   @override
   void initState() {
     super.initState();
     widget.store.getWeatherDetails(widget.cityName);
+
   }
 
   @override

@@ -10,43 +10,48 @@ import 'package:mobx/mobx.dart';
 import 'package:provider/provider.dart';
 
 class WeatherPage extends StatefulWidget {
+  final WeatherStore store;
+
+  const WeatherPage({Key key, this.store}) : super(key: key);
+
   @override
   _WeatherPageState createState() => _WeatherPageState();
 
   static Widget create() {
     return Provider<WeatherStore>(
       create: (_) => WeatherStore(AppRepository()),
-      child: WeatherPage(),
+      dispose: (_, store) => store,
+      child: Consumer<WeatherStore>(
+        builder: (_, store, __) => WeatherPage(store: store),
+      ),
     );
   }
 }
 
 class _WeatherPageState extends State<WeatherPage> {
   NumberFormat naturalFormat = NumberFormat('#,###,###,###.#');
-  WeatherStore _store;
   GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey();
   List<ReactionDisposer> _snackBarDisposer;
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _store ??= Provider.of<WeatherStore>(context);
-    print("didChangeDependencies: $_store");
-    var disposer = reaction((_) => _store.errorMessage, (String message) =>
-        _scaffoldKey.currentState.showSnackBar(
-          SnackBar(content: Text(message),
-          ),
+  void initState() {
+    super.initState();
+    var disposer = reaction(
+      (_) => widget.store.errorMessage,
+      (String message) => _scaffoldKey.currentState.showSnackBar(
+        SnackBar(
+          content: Text(message),
         ),
+      ),
     );
 
     _snackBarDisposer ??= [disposer];
-
   }
 
   @override
   void dispose() {
     super.dispose();
-    _snackBarDisposer.forEach((disposer) => disposer());
+//    _snackBarDisposer.forEach((disposer) => disposer());
   }
 
   @override
@@ -65,13 +70,13 @@ class _WeatherPageState extends State<WeatherPage> {
           child: Observer(
             builder: (_) {
               print('builder: ');
-              switch(_store.state){
+              switch (widget.store.state) {
                 case StoreState.initial:
                   return buildColumnWithData(context, null);
                 case StoreState.loading:
                   return _buildCircularIndicator();
                 case StoreState.loaded:
-                  return buildColumnWithData(context, _store.weather);
+                  return buildColumnWithData(context, widget.store.weather);
                 default:
                   return buildColumnWithData(context, null);
               }
@@ -96,14 +101,11 @@ class _WeatherPageState extends State<WeatherPage> {
             '${naturalFormat.format(weather.temperature)}°C',
             style: TextStyle(fontSize: 80),
           ),
-
-        if(weather != null)
+        if (weather != null)
           RaisedButton(
             color: Colors.lightBlue[100],
             child: Text('See Details'),
-            onPressed: () {
-              Navigator.of(context).push(MaterialPageRoute(builder: (_) => WeatherDetails.create(weather.cityName, context)));
-            },
+            onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => WeatherDetails.create(weather.cityName, context))),
           ),
         TextInputField()
       ],
